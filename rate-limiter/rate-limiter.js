@@ -50,8 +50,8 @@ async function rateLimiter(req, res, next) {
   // 60 here is an arbitrary number that will ultimately be replaced with a variable tied to config
   if (requestCount > rateConfig.requestLimit) {
     return next({
-      message: 'Too Many Requests',
-      error: 429,
+      message: { err: 'Too Many Requests' },
+      status: 429,
       log: 'KnightOwl: Exceeded request limit, Error in rateLimiter.',
     });
   }
