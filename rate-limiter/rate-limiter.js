@@ -1,6 +1,7 @@
 const Express = require('express');
 const { promisifyAll } = require('bluebird');
 const Redis = require('redis');
+const { rateConfig } = require('../config');
 
 const redis = new Redis();
 promisifyAll(redis);
@@ -41,13 +42,13 @@ async function rateLimiter(req, res, next) {
   // if the ip address is in our redis store increment the count, otherwise initialize key val pair
   const requestCount = await redis.incr(ip);
   if (requestCount === 1) {
-    redis.expire(ip, 60);
+    redis.expire(ip, rateConfig.timeLimit);
   }
   // const ttl = await redis.ttl(ip);
   // console.log(`ip: ${ip}; requestCount: ${requestCount}; TTL: ${ttl}`);
 
   // 60 here is an arbitrary number that will ultimately be replaced with a variable tied to config
-  if (requestCount > 60) {
+  if (requestCount > rateConfig.requestLimit) {
     return next({
       message: 'Too Many Requests',
       error: 429,
