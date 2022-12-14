@@ -1,7 +1,16 @@
 const Express = require('express');
+const { promisifyAll } = require('bluebird');
 const Redis = require('redis');
 
 const redis = new Redis();
+promisifyAll(redis);
+
+// connect to redis
+
+async function connect() {
+  await redis.connect();
+}
+connect();
 
 /*
 * Rate Limiter
@@ -34,6 +43,8 @@ async function rateLimiter(req, res, next) {
   if (requestCount === 1) {
     redis.expire(ip, 60);
   }
+  // const ttl = await redis.ttl(ip);
+  // console.log(`ip: ${ip}; requestCount: ${requestCount}; TTL: ${ttl}`);
 
   // 60 here is an arbitrary number that will ultimately be replaced with a variable tied to config
   if (requestCount > 60) {
