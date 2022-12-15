@@ -6,49 +6,57 @@ import { depthLimit } from './utils/depthLimit.js';
 // GraphQL schema
 const schema = buildSchema(`
     type Query {
-        course(id: Int!): Course
-        courses(topic: String): [Course]
+        song(id: Int!): Song
+        album(id: Int!): Album
+        songs(topic: String): [Song]
+        albums(topic: String): [Album]
     },
-    type Course {
+    type Song {
         id: Int
         title: String
-        author: String
-        description: String
-        topic: String
-        url: String
+        album: String
+    }
+    type Album {
+        id: Int
+        title: String
+        songs: [String]
     }
 `);
 
-const coursesData = [
+const albumData = [
   {
     id: 1,
-    title: 'The Complete Node.js Developer Course',
-    author: 'Andrew Mead, Rob Percival',
-    description: 'Learn Node.js by building real-world applications with Node, Express, MongoDB, Mocha, and more!',
-    topic: 'Node.js',
-    url: 'https://codingthesmartway.com/courses/nodejs/',
+    title: 'Jackson\'s Greatest Hits',
+    songs: ['Slam Poetry', 'Raised By the Streets'],
   },
   {
     id: 2,
-    title: 'Node.js, Express & MongoDB Dev to Deployment',
-    author: 'Andrew Mead, Rob Percival',
-    description: 'Learn by example building & deploying real-world Node.js applications from absolute scratch',
-    topic: 'Node.js',
-    url: 'https://codingthesmartway.com/courses/nodejs-express-mongodb/',
-  },
-  {
-    id: 3,
-    title: 'JavaScript Understanding The Weird Parts',
-    author: 'Anthony Alicea',
-    description: 'An advanced JavaScript course for everyone! Scope, closures, prototypes, this, build your own framework, and more.',
-    topic: 'JavaScript',
-    url: 'https://codingthesmartway.com/courses/understand-javascript/',
+    title: 'Jackson\'s Worst Hits',
+    songs: ['Banana Loaf', 'Ping Pong Serves'],
   },
 ];
 
-const getCourse = (args) => {
+const songData = [
+  {
+    id: 1,
+    title: 'Slam Poetry',
+    album: 'Jackson\'s Greatest Hits',
+  },
+  {
+    id: 2,
+    title: 'Raised By the Streets',
+    album: 'Jackson\'s Greatest Hits',
+  },
+];
+
+const getAlbum = (args) => {
   const { id } = args;
-  return coursesData.filter((course) => course.id === id)[0];
+  return albumData.filter((album) => album.id === id)[0];
+};
+
+const getSong = (args) => {
+  const { id } = args;
+  return songData.filter((song) => song.id === id)[0];
 };
 
 const getCourses = (args) => {
@@ -61,8 +69,9 @@ const getCourses = (args) => {
 
 // Root resolver
 const root = {
-  course: getCourse,
-  courses: getCourses,
+  album: getAlbum,
+  song: getSong,
+  songs: getCourses,
 };
 
 // Create an express server and a GraphQL endpoint
