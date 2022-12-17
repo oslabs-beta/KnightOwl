@@ -25,13 +25,13 @@ export default function costLimiter(req, res, next) {
 
   // if cost is above total limit, return next() with an error
   // else return next()
-  // return (res.locals.cost < costs.max) ? next() : next({
-  //   log: 'KnightOwl: Query rejected by costLimiter - total cost per query exceeded.',
-  //   status: 429,
-  //   message: {err: 'Query exceeds maximum complexity cost.'} 
-  // })
+  return (res.locals.cost < costs.max) ? next() : next({
+    log: 'KnightOwl: Query rejected by costLimiter - total cost per query exceeded.',
+    status: 429,
+    message: {err: 'Query exceeds maximum complexity cost.'} 
+  })
+  // return next();
   console.log('cost: ', res.locals.cost)
-  return next();
 }
 
 function assessCost(obj, res) {
