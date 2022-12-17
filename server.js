@@ -10,6 +10,13 @@ import {
 } from 'graphql';
 import { depthLimit } from './utils/depthLimit.js';
 
+import { parse } from 'graphql/language/parser.js';
+import { graphql } from 'graphql';
+import util from 'util';
+
+import costLimiter from './cost-assesser/cost-limiter.js';
+import rateLimiter from './rate-limiter/rate-limiter.js';
+
 const authors = [
 	{ id: 1, name: 'J. K.' },
 	{ id: 2, name: 'J. R. R.' },
@@ -95,9 +102,13 @@ const schema = new GraphQLSchema({
   query: RootQueryType
 });
 
+
 // Create an express server and a GraphQL endpoint
 const app = express();
-app.use('/graphql', graphqlHTTP({
+
+app.use(express.json())
+
+app.use('/graphql', costLimiter, rateLimiter, graphqlHTTP({
   schema,
   graphiql: true,
   validationRules: [ depthLimit(2) ],
