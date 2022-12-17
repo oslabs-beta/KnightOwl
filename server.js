@@ -1,6 +1,13 @@
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
-import { buildSchema } from 'graphql';
+import {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLList,
+  GraphQLInt,
+  GraphQLNonNull
+} from 'graphql';
 import { depthLimit } from './utils/depthLimit.js';
 
 import { parse } from 'graphql/language/parser.js';
@@ -10,81 +17,91 @@ import util from 'util';
 import costLimiter from './cost-assesser/cost-limiter.js';
 import rateLimiter from './rate-limiter/rate-limiter.js';
 
-// GraphQL schema
-const schema = buildSchema(`
-    type Query {
-        song(id: Int!): Song
-        album(id: Int!): Album
-        songs(topic: String): [Song]
-        albums(topic: String): [Album]
+const authors = [
+	{ id: 1, name: 'J. K.' },
+	{ id: 2, name: 'J. R. R.' },
+	{ id: 3, name: 'Brent Weeks' }
+];
+
+const books = [
+	{ id: 1, name: 'Harry Potter and the Chamber of Secrets', authorId: 1 },
+	{ id: 2, name: 'Harry Potter and the Prisoner of Azkaban', authorId: 1 },
+	{ id: 3, name: 'Harry Potter and the Goblet of Fire', authorId: 1 },
+	{ id: 4, name: 'The Fellowship of the Ring', authorId: 2 },
+	{ id: 5, name: 'The Two Towers', authorId: 2 },
+	{ id: 6, name: 'The Return of the King', authorId: 2 },
+	{ id: 7, name: 'The Way of Shadows', authorId: 3 },
+	{ id: 8, name: 'Beyond the Shadows', authorId: 3 }
+];
+
+const BookType = new GraphQLObjectType({
+  name: 'Book',
+  description: 'This represents a book written by an author',
+  fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt) },
+    name: { type: GraphQLNonNull(GraphQLString) },
+    authorId: { type: GraphQLNonNull(GraphQLInt) },
+    author: {
+      type: AuthorType,
+      resolve: (book) => {
+        return authors.find(author => author.id === book.authorId)
+      }
+    }
+  })
+});
+
+const AuthorType = new GraphQLObjectType({
+  name: 'Author',
+  description: 'This represents a author of a book',
+  fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLInt) },
+    name: { type: GraphQLNonNull(GraphQLString) },
+    books: {
+      type: new GraphQLList(BookType),
+      resolve: (author) => {
+        return books.filter(book => book.authorId === author.id)
+      }
+    }
+  })
+});
+
+const RootQueryType = new GraphQLObjectType({
+  name: 'Query',
+  description: 'Root Query',
+  fields: () => ({
+    book: {
+      type: BookType,
+      description: 'A Single Book',
+      args: {
+        id: { type: GraphQLInt }
+      },
+      resolve: (parent, args) => books.find(book => book.id === args.id)
     },
-    type Song {
-        id: Int
-        title: String
-        album: String
+    books: {
+      type: new GraphQLList(BookType),
+      description: 'List of All Books',
+      resolve: () => books
+    },
+    authors: {
+      type: new GraphQLList(AuthorType),
+      description: 'List of All Authors',
+      resolve: () => authors
+    },
+    author: {
+      type: AuthorType,
+      description: 'A Single Author',
+      args: {
+        id: { type: GraphQLInt }
+      },
+      resolve: (parent, args) => authors.find(author => author.id === args.id)
     }
-    type Album {
-        id: Int
-        title: String
-        songs: [String]
-    }
-`);
+  })
+});
 
-const albumData = [
-  {
-    id: 1,
-    title: 'Jackson\'s Greatest Hits',
-    songs: ['Slam Poetry', 'Raised By the Streets'],
-  },
-  {
-    id: 2,
-    title: 'Jackson\'s Worst Hits',
-    songs: ['Banana Loaf', 'Ping Pong Serves'],
-  },
-];
+const schema = new GraphQLSchema({
+  query: RootQueryType
+});
 
-const songData = [
-  {
-    id: 1,
-    title: 'Slam Poetry',
-    album: 'Jackson\'s Greatest Hits',
-  },
-  {
-    id: 2,
-    title: 'Raised By the Streets',
-    album: 'Jackson\'s Greatest Hits',
-  },
-];
-
-const getAlbum = (args) => {
-  const { id } = args;
-  return albumData.filter((album) => album.id === id)[0];
-};
-
-const getSong = (args) => {
-  const { id } = args;
-  return songData.filter((song) => song.id === id)[0];
-};
-
-const getCourses = (args) => {
-  if (args.topic) {
-    const { topic } = args;
-    return coursesData.filter((course) => course.topic === topic);
-  }
-  return coursesData;
-};
-
-// Root resolver
-const root = {
-  album: getAlbum,
-  song: getSong,
-  songs: getCourses,
-};
-
-// function logBody(req, res, next) {
-//   console.log('body in logBody: ', req.body)
-//   return next();
-// }
 
 // Create an express server and a GraphQL endpoint
 const app = express();
@@ -93,10 +110,8 @@ app.use(express.json())
 
 app.use('/graphql', costLimiter, rateLimiter, graphqlHTTP({
   schema,
-  rootValue: root,
   graphiql: true,
-  // validationRules: [depthLimit(10)],
+  validationRules: [ depthLimit(2) ],
 }));
 
 app.listen(3000, () => console.log('Express GraphQL Server Now Running On localhost:3000/graphql'));
-
