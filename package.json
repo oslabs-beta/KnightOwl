@@ -2,9 +2,9 @@
   "name": "knightowl",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon server.js"
   },
   "type": "module",
   "repository": {
@@ -21,15 +21,14 @@
   "devDependencies": {
     "eslint": "^8.29.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.26.0"
+    "eslint-plugin-import": "^2.26.0",
+    "nodemon": "^2.0.20"
   },
   "dependencies": {
-    "arrify": "^3.0.0",
-    "express-graphql": "^0.12.0",
-    "graphql": "^15.8.0",
-    "graphql-depth-limit": "^1.1.0",
     "bluebird": "^3.7.2",
     "express": "^4.18.2",
+    "express-graphql": "^0.12.0",
+    "graphql": "^15.8.0",
     "redis": "^4.5.1"
   }
 }
