@@ -100,7 +100,7 @@ const app = express();
 app.use('/graphql', graphqlHTTP({
   schema,
   graphiql: true,
-  validationRules: [depthLimit(2)],
+  validationRules: [ depthLimit(2) ],
 }));
 
 app.listen(3000, () => console.log('Express GraphQL Server Now Running On localhost:3000/graphql'));

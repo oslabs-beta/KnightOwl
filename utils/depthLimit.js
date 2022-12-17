@@ -1,4 +1,4 @@
-import { GraphQLError, Kind } from 'graphql';
+import { GraphQLError } from 'graphql';
 
 export const depthLimit = (maxDepth) => validationContext => {
     try {
