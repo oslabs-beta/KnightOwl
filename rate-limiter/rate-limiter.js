@@ -50,7 +50,7 @@ export default async function rateLimiter(req, res, next) {
   console.log('cost: ', res.locals.cost);
 
   const firstRequest = await redis.exists(ip);
-  if (!redis.exists) {
+  if (!redis.exists(ip)) {
     redis.expire(ip, rateConfig.timeLimit);
   }
 
