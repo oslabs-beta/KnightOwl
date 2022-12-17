@@ -1,9 +1,15 @@
-const Express = require('express');
-const { promisifyAll } = require('bluebird');
-const Redis = require('redis');
-const { rateConfig } = require('../config');
+// const Express = require('express');
+// const { promisifyAll } = require('bluebird');
+// const Redis = require('redis');
+// const { rateConfig } = require('../config');
 
-const redis = new Redis();
+import Express from 'express';
+import Redis from 'redis';
+import { rateConfig } from '../config.js';
+import pkg from 'bluebird';
+const { promisifyAll } = pkg;
+
+const redis = new Redis.createClient();
 promisifyAll(redis);
 
 // connect to redis
@@ -37,18 +43,23 @@ connect();
 
 */
 
-async function rateLimiter(req, res, next) {
+export default async function rateLimiter(req, res, next) {
+  // TODO: confirm that this is the appropriate way to handle getting IP addresses when behind proxy
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   // if the ip address is in our redis store increment the count, otherwise initialize key val pair
-  const requestCount = await redis.incr(ip);
-  if (requestCount === 1) {
+  console.log('cost: ', res.locals.cost);
+
+  const firstRequest = await redis.exists(ip);
+  if (!redis.exists) {
     redis.expire(ip, rateConfig.timeLimit);
   }
-  // const ttl = await redis.ttl(ip);
-  // console.log(`ip: ${ip}; requestCount: ${requestCount}; TTL: ${ttl}`);
 
-  // 60 here is an arbitrary number that will ultimately be replaced with a variable tied to config
+  const requestCount = await redis.sendCommand(['INCRBY', `${ip}`, `${res.locals.cost}`]);
+  const ttl = await redis.ttl(ip);
+  console.log(`ip: ${ip}; requestCount: ${requestCount}; TTL: ${ttl}`);
+
   if (requestCount > rateConfig.requestLimit) {
+    console.log('too many requests');
     return next({
       message: { err: 'Too Many Requests' },
       status: 429,
@@ -58,5 +69,3 @@ async function rateLimiter(req, res, next) {
 
   return next();
 }
-
-module.exports = rateLimiter

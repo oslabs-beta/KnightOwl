@@ -8,6 +8,7 @@ import { graphql } from 'graphql';
 import util from 'util';
 
 import costLimiter from './cost-assesser/cost-limiter.js';
+import rateLimiter from './rate-limiter/rate-limiter.js';
 
 // GraphQL schema
 const schema = buildSchema(`
@@ -90,11 +91,11 @@ const app = express();
 
 app.use(express.json())
 
-app.use('/graphql', costLimiter, graphqlHTTP({
+app.use('/graphql', costLimiter, rateLimiter, graphqlHTTP({
   schema,
   rootValue: root,
   graphiql: true,
-  validationRules: [depthLimit(10)],
+  // validationRules: [depthLimit(10)],
 }));
 
 app.listen(3000, () => console.log('Express GraphQL Server Now Running On localhost:3000/graphql'));
