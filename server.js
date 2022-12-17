@@ -3,6 +3,8 @@ import { graphqlHTTP } from 'express-graphql';
 import { buildSchema } from 'graphql';
 import { depthLimit } from './utils/depthLimit.js';
 
+import costLimiter from './cost-assesser/cost-limiter.js';
+
 // GraphQL schema
 const schema = buildSchema(`
     type Query {
@@ -74,13 +76,18 @@ const root = {
   songs: getCourses,
 };
 
+function logBody(req, res, next) {
+  console.log('body in logBody: ', req.body)
+  return next();
+}
+
 // Create an express server and a GraphQL endpoint
 const app = express();
-app.use('/graphql', graphqlHTTP({
+app.use('/graphql', logBody, costLimiter, graphqlHTTP({
   schema,
   rootValue: root,
   graphiql: true,
-  validationRules: [depthLimit(10)],
+  // validationRules: [depthLimit(10)],
 }));
 
 app.listen(3000, () => console.log('Express GraphQL Server Now Running On localhost:3000/graphql'));
