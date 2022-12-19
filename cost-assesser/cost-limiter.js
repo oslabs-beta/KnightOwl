@@ -5,14 +5,14 @@ import { parse } from 'graphql';
 // Main function to be added to middleware chain.
 export default function costLimiter(req, res, next) {
   // grab the query string off the request body
-  console.log('body: ', req.context);
-  const { query } = req.body
+  console.log('body: ', req.body);
+  // const { query } = req.body
   
   // if the query has content, parse the request into an object and assess it with helper function
-  if (query) {
+  if (req.body?.query) {
     // if (query?.definitions[0].name !== 'IntrospectionQuery') {
-    const parsedQuery = parse(query);
-    // console.log('parsed query: ', parsedQuery)  
+    const parsedQuery = parse(req.body.query);
+    console.log('parsed query: ', parsedQuery)  
       
     /* TODO: refine this condition -- introspectionquery was causing errors because it gets attached to
     the request to load the graphiql playground so I added it to make sure we don't try to parse this
@@ -21,18 +21,21 @@ export default function costLimiter(req, res, next) {
       // console.log('assessing');
       const passRes = res; // save res object in a constant so it can be passed into helper function
       assessCost(parsedQuery, passRes);
+      return (res.locals.cost < costs.max) ? next() : res.status(429).json({
+        // log: 'KnightOwl: Query rejected by costLimiter - total cost per query exceeded.',
+        // status: 429,
+        message: 'Query exceeds maximum complexity cost.'
+      })
     }
-  }
 
+  }
+  
   // if cost is above total limit, return next() with an error
   // else return next()
-  return (res.locals.cost < costs.max) ? next() : next({
-    log: 'KnightOwl: Query rejected by costLimiter - total cost per query exceeded.',
-    status: 429,
-    message: {err: 'Query exceeds maximum complexity cost.'} 
-  })
   // return next();
   // console.log('cost: ', res.locals.cost)
+  console.log('no cost assessment');
+  return next();
 }
 
 // Helper function that will be invoked when costLimiter() runs in middleware chain
