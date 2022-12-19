@@ -1,5 +1,5 @@
 export const rateConfig = {
-  requestLimit: 15,
+  requestLimit: 100,
   timeLimit: 60,
 };
 export const costs = {

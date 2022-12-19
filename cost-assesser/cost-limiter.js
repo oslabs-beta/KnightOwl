@@ -5,7 +5,7 @@ import { parse } from 'graphql';
 // Main function to be added to middleware chain.
 export default function costLimiter(req, res, next) {
   // grab the query string off the request body
-  // console.log('body: ', req.body);
+  console.log('body: ', req.context);
   const { query } = req.body
   
   // if the query has content, parse the request into an object and assess it with helper function
