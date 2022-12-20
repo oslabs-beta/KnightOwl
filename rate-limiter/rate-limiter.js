@@ -48,10 +48,10 @@ export default async function rateLimiter(req, res, next) {
   // TODO: confirm that this is the appropriate way to handle getting IP addresses when behind proxy
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   // if the ip address is in our redis store increment the count, otherwise initialize key val pair
-
+  
   const firstRequest = await redis.exists(ip);
   console.log('firstrequest: ', firstRequest)
-  if (firstRequest) {
+  if (!firstRequest) {
     console.log('creating and setting expiry');
     redis.incr(ip);
     redis.expire(ip, rateConfig.timeLimit);
