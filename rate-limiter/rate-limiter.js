@@ -3,7 +3,7 @@
 // const Redis = require('redis');
 // const { rateConfig } = require('../config');
 
-import Express from 'express';
+import Express, { request } from 'express';
 import Redis from 'redis';
 import { rateConfig } from '../config.js';
 import pkg from 'bluebird';
@@ -44,26 +44,30 @@ connect();
 */
 
 export default async function rateLimiter(req, res, next) {
+  console.log('cost: ', res.locals.cost);
   // TODO: confirm that this is the appropriate way to handle getting IP addresses when behind proxy
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   // if the ip address is in our redis store increment the count, otherwise initialize key val pair
-  console.log('cost: ', res.locals.cost);
 
   const firstRequest = await redis.exists(ip);
-  if (!redis.exists(ip)) {
+  console.log('firstrequest: ', firstRequest)
+  if (firstRequest) {
+    console.log('creating and setting expiry');
+    redis.incr(ip);
     redis.expire(ip, rateConfig.timeLimit);
   }
 
   const requestCount = await redis.sendCommand(['INCRBY', `${ip}`, `${res.locals.cost}`]);
+  console.log('request count: ', requestCount);
   const ttl = await redis.ttl(ip);
   console.log(`ip: ${ip}; requestCount: ${requestCount}; TTL: ${ttl}`);
 
   if (requestCount > rateConfig.requestLimit) {
     console.log('too many requests');
-    return next({
-      message: { err: 'Too Many Requests' },
-      status: 429,
-      log: 'KnightOwl: Exceeded request limit, Error in rateLimiter.',
+    return res.status(429).json({
+      message: 'Too Many Requests',
+      // status: 429,
+      // log: 'KnightOwl: Exceeded request limit, Error in rateLimiter.',
     });
   }
 
