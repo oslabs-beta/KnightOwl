@@ -57,7 +57,12 @@ export default async function rateLimiter(req, res, next) {
     redis.expire(ip, rateConfig.timeLimit);
   }
 
-  const requestCount = await redis.sendCommand(['INCRBY', `${ip}`, `${res.locals.cost}`]);
+  // increment query by 1 if query bypassed cost limiter as an introspection query, else increment by cost
+  // assigned in cost-limiter
+  const incrementAmount = res.locals.cost || 1;
+  console.log('increment amount: ', incrementAmount)
+
+  const requestCount = await redis.sendCommand(['INCRBY', `${ip}`, `${incrementAmount}`]);
   console.log('request count: ', requestCount);
   const ttl = await redis.ttl(ip);
   console.log(`ip: ${ip}; requestCount: ${requestCount}; TTL: ${ttl}`);
