@@ -1,6 +1,9 @@
 import express from 'express';
 import { costs } from '../config.js';
 import { parse } from 'graphql';
+import util from 'util';
+
+import fs from 'fs';
 
 // Main function to be added to middleware chain.
 export default function costLimiter(req, res, next) {
@@ -14,19 +17,14 @@ export default function costLimiter(req, res, next) {
     const parsedQuery = parse(req.body.query);
     console.log('parsed query: ', parsedQuery)  
       
-    /* TODO: refine this condition -- introspectionquery was causing errors because it gets attached to
-    the request to load the graphiql playground so I added it to make sure we don't try to parse this
-    internal-system type query, but we'll want to handle this better as we go */
-    if (parsedQuery.definitions[0].name !== 'IntrospectionQuery') {
-      // console.log('assessing');
-      const passRes = res; // save res object in a constant so it can be passed into helper function
-      assessCost(parsedQuery, passRes);
-      return (res.locals.cost < costs.max) ? next() : res.status(429).json({
-        // log: 'KnightOwl: Query rejected by costLimiter - total cost per query exceeded.',
-        // status: 429,
-        message: 'Query exceeds maximum complexity cost.'
-      })
-    }
+    
+    const passRes = res; // save res object in a constant so it can be passed into helper function
+    assessCost(parsedQuery, passRes);
+    return (res.locals.cost < costs.max) ? next() : res.status(429).json({
+      // log: 'KnightOwl: Query rejected by costLimiter - total cost per query exceeded.',
+      // status: 429,
+      message: 'Query exceeds maximum complexity cost.'
+    })
 
   }
   
