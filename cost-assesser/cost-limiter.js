@@ -1,40 +1,36 @@
 import express from 'express';
-import { costs } from '../config.js';
+import { costs, forbiddenOperations } from '../config.js';
 import { parse } from 'graphql';
+import util from 'util';
 
 // Main function to be added to middleware chain.
 export default function costLimiter(req, res, next) {
   // grab the query string off the request body
   console.log('body: ', req.body);
   // const { query } = req.body
+
   
   // if the query has content, parse the request into an object and assess it with helper function
   if (req.body?.query) {
-    // if (query?.definitions[0].name !== 'IntrospectionQuery') {
     const parsedQuery = parse(req.body.query);
     console.log('parsed query: ', parsedQuery)  
-      
-    /* TODO: refine this condition -- introspectionquery was causing errors because it gets attached to
-    the request to load the graphiql playground so I added it to make sure we don't try to parse this
-    internal-system type query, but we'll want to handle this better as we go */
-    if (parsedQuery.definitions[0].name !== 'IntrospectionQuery') {
-      // console.log('assessing');
-      const passRes = res; // save res object in a constant so it can be passed into helper function
-      assessCost(parsedQuery, passRes);
-      return (res.locals.cost < costs.max) ? next() : res.status(429).json({
-        // log: 'KnightOwl: Query rejected by costLimiter - total cost per query exceeded.',
-        // status: 429,
-        message: 'Query exceeds maximum complexity cost.'
+    
+    const passRes = res; // save res object in a constant so it can be passed into helper function
+    const assessment = assessCost(parsedQuery, passRes);
+    
+    // Refuse query if assessCost finds an introspection query and config is set to forbid
+    if (!assessment) {
+      return res.status(429).json({
+        message: 'Forbidden query.'
       })
-    }
+    };
+
+    return (res.locals.cost < costs.max) ? next() : res.status(429).json({
+      message: 'Query exceeds maximum complexity cost.'
+    })
 
   }
   
-  // if cost is above total limit, return next() with an error
-  // else return next()
-  // return next();
-  // console.log('cost: ', res.locals.cost)
-  console.log('no cost assessment');
   return next();
 }
 
@@ -59,6 +55,15 @@ function assessCost(obj, res) {
     then dive into the field by recursively calling assessCost on the field */
     if (obj.definitions[0].selectionSet) {
       for (const field of obj.definitions[0].selectionSet.selections) {
+        // if the config property to forbid introspection queries is set to true, determine if the incoming operation
+        // is an introspection query and if so reject
+        if (forbiddenOperations.introspectionQueries) {
+          console.log('checking for introspection: ', field.name)
+          if (field.name.value.startsWith('__')) {
+            console.log('introspection found')
+            return false
+          }
+        }
         // console.log('field: ', field)
         const increment = (costs.fieldCosts.hasOwnProperty(field.name.value)) 
           ? costs.fieldCosts[field.name.value] 
@@ -77,6 +82,13 @@ function assessCost(obj, res) {
     // as at the top level, iterate over all fields requested in the selections array, incrementing
     // cost per the config and recusively calling assessCost on the field
     for (const field of obj.selectionSet.selections) {
+      // if the config property to forbid introspection queries is set to true, determine if the incoming operation
+      // is an introspection query and if so reject
+      if (forbiddenOperations.introspectionQueries) {
+        if (field.name.value.startsWith('__')) {
+          return false
+        }
+      }
       // console.log('field: ', field)
       const increment = (costs.fieldCosts.hasOwnProperty(field.name.value)) 
         ? costs.fieldCosts[field.name.value] 
@@ -89,6 +101,6 @@ function assessCost(obj, res) {
       assessCost(field, passingRes);
     }
   }
-
+  return true;
 }
 

@@ -1,9 +1,9 @@
 export const rateConfig = {
-  requestLimit: 100,
+  requestLimit: 150,
   timeLimit: 60,
 };
 export const costs = {
-  max: 1000,
+  max: 100,
   operationCosts: {
     query: 1,
     mutation: 10,
@@ -13,3 +13,6 @@ export const costs = {
     default: 1,
   }
 };
+export const forbiddenOperations = {
+  introspectionQueries: false,
+}
