@@ -1,6 +1,6 @@
-import { GraphQLError } from 'graphql';
+const { GraphQLError } = require('graphql');
 
-export const depthLimit = (maxDepth) => validationContext => {
+const depthLimit = (maxDepth) => validationContext => {
     try {
       const { definitions } = validationContext.getDocument();
       // Organize the nested queries into a nested object.
@@ -59,3 +59,5 @@ function determineDepth(node, depthSoFar, maxDepth, context, operationName) {
     throw new Error('Depth crawler error in the determineDepth function: ' + node.kind);
   }
 };
+
+module.exports = depthLimit;

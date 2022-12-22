@@ -3,10 +3,10 @@
 // const Redis = require('redis');
 // const { rateConfig } = require('../config');
 
-import Express, { request } from 'express';
-import Redis from 'redis';
-import { rateConfig } from '../config.js';
-import pkg from 'bluebird';
+const Express = require('express');
+const Redis = require('redis');
+const { rateConfig } = require('../config.js');
+const pkg = require('bluebird');
 const { promisifyAll } = pkg;
 
 const redis = new Redis.createClient();
@@ -43,7 +43,7 @@ connect();
 
 */
 
-export default async function rateLimiter(req, res, next) {
+async function rateLimiter(req, res, next) {
   console.log('cost: ', res.locals.cost);
   // TODO: confirm that this is the appropriate way to handle getting IP addresses when behind proxy
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -78,3 +78,5 @@ export default async function rateLimiter(req, res, next) {
 
   return next();
 }
+
+module.exports = rateLimiter;

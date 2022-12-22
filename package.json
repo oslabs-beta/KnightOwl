@@ -2,11 +2,10 @@
   "name": "knightowl",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "main.js",
   "scripts": {
     "dev": "nodemon server.js"
   },
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oslabs-beta/KnightOwl.git"

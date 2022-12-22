@@ -1,18 +1,23 @@
-export const rateConfig = {
-  requestLimit: 150,
-  timeLimit: 60,
-};
-export const costs = {
-  max: 100,
-  operationCosts: {
-    query: 1,
-    mutation: 10,
-    subscription: 10
+
+const config = {
+  rateConfig: {
+    requestLimit: 150,
+    timeLimit: 60,
   },
-  fieldCosts: {
-    default: 1,
+  costs: {
+    max: 5,
+    operationCosts: {
+      query: 50,
+      mutation: 10,
+      subscription: 10
+    },
+    fieldCosts: {
+      default: 1,
+    }
+  },
+  forbiddenOperations: {
+    introspectionQueries: false,
   }
-};
-export const forbiddenOperations = {
-  introspectionQueries: false,
 }
+
+module.exports = config;

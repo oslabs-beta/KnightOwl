@@ -1,10 +1,10 @@
-import express from 'express';
-import { costs, forbiddenOperations } from '../config.js';
-import { parse } from 'graphql';
-import util from 'util';
+// import express from 'express';
+const { costs, forbiddenOperations } = require('../config.js');
+const { parse } = require('graphql');
+// import util from 'util';
 
 // Main function to be added to middleware chain.
-export default function costLimiter(req, res, next) {
+function costLimiter(req, res, next) {
   // grab the query string off the request body
   console.log('body: ', req.body);
   // const { query } = req.body
@@ -104,3 +104,4 @@ function assessCost(obj, res) {
   return true;
 }
 
+module.exports = costLimiter;
