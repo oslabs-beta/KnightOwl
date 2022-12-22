@@ -58,9 +58,9 @@ function assessCost(obj, res) {
         // if the config property to forbid introspection queries is set to true, determine if the incoming operation
         // is an introspection query and if so reject
         if (forbiddenOperations.introspectionQueries) {
-          console.log('checking for introspection: ', field.name)
+          // console.log('checking for introspection: ', field.name)
           if (field.name.value.startsWith('__')) {
-            console.log('introspection found')
+            // console.log('introspection found')
             return false
           }
         }

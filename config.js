@@ -5,9 +5,9 @@ const config = {
     timeLimit: 60,
   },
   costs: {
-    max: 5,
+    max: 10000,
     operationCosts: {
-      query: 50,
+      query: 1,
       mutation: 10,
       subscription: 10
     },
