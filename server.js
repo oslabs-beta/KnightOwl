@@ -1,37 +1,38 @@
-import express from 'express';
-import { graphqlHTTP } from 'express-graphql';
-import {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLList,
-  GraphQLInt,
-  GraphQLNonNull
-} from 'graphql';
-import { depthLimit } from './utils/depthLimit.js';
+const express = require('express');
+const { graphqlHTTP } = require('express-graphql');
 
-import { parse } from 'graphql/language/parser.js';
-import { graphql } from 'graphql';
-import util from 'util';
 
-import costLimiter from './cost-assesser/cost-limiter.js';
-import rateLimiter from './rate-limiter/rate-limiter.js';
+const { GraphQLSchema } = require('graphql');
+const { GraphQLObjectType } = require('graphql');
+const { GraphQLString } = require('graphql');
+const { GraphQLList } = require('graphql');
+const { GraphQLInt } = require('graphql');
+const { GraphQLNonNull } = require('graphql');
+
+
+const { parse } = require('graphql/language/parser.js');
+const { graphql } = require('graphql');
+const util = require('util');
+const depthLimit = require('./utils/depthLimit.js');
+
+const costLimiter = require('./cost-assesser/cost-limiter.js');
+const rateLimiter = require('./rate-limiter/rate-limiter.js');
 
 const authors = [
-	{ id: 1, name: 'J. K.' },
-	{ id: 2, name: 'J. R. R.' },
-	{ id: 3, name: 'Brent Weeks' }
+  { id: 1, name: 'J. K.' },
+  { id: 2, name: 'J. R. R.' },
+  { id: 3, name: 'Brent Weeks' }
 ];
 
 const books = [
-	{ id: 1, name: 'Harry Potter and the Chamber of Secrets', authorId: 1 },
-	{ id: 2, name: 'Harry Potter and the Prisoner of Azkaban', authorId: 1 },
-	{ id: 3, name: 'Harry Potter and the Goblet of Fire', authorId: 1 },
-	{ id: 4, name: 'The Fellowship of the Ring', authorId: 2 },
-	{ id: 5, name: 'The Two Towers', authorId: 2 },
-	{ id: 6, name: 'The Return of the King', authorId: 2 },
-	{ id: 7, name: 'The Way of Shadows', authorId: 3 },
-	{ id: 8, name: 'Beyond the Shadows', authorId: 3 }
+  { id: 1, name: 'Harry Potter and the Chamber of Secrets', authorId: 1 },
+  { id: 2, name: 'Harry Potter and the Prisoner of Azkaban', authorId: 1 },
+  { id: 3, name: 'Harry Potter and the Goblet of Fire', authorId: 1 },
+  { id: 4, name: 'The Fellowship of the Ring', authorId: 2 },
+  { id: 5, name: 'The Two Towers', authorId: 2 },
+  { id: 6, name: 'The Return of the King', authorId: 2 },
+  { id: 7, name: 'The Way of Shadows', authorId: 3 },
+  { id: 8, name: 'Beyond the Shadows', authorId: 3 }
 ];
 
 const BookType = new GraphQLObjectType({
@@ -111,7 +112,7 @@ app.use(express.json())
 app.use('/graphql', costLimiter, rateLimiter, graphqlHTTP({
   schema,
   graphiql: true,
-  validationRules: [ depthLimit(20) ],
+  validationRules: [depthLimit(20)],
 }));
 
 app.listen(3000, () => console.log('Express GraphQL Server Now Running On localhost:3000/graphql'));
