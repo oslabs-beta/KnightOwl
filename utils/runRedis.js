@@ -27,8 +27,8 @@ function manageBatch() {
           },
           body: JSON.stringify({
             cachedQueries: cachedQueries,
-            KOUser: process.env.KOUser,
-            KOPass: process.env.KOPass
+            KOUser: process.env.KO_USER,
+            KOPass: process.env.KO_PASS
           })
         })
         .then(data => data.json())

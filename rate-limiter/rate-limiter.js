@@ -71,10 +71,10 @@ async function rateLimiter(req, res, next) {
   if (requestCount > rateConfig.requestLimit) {
     console.log('too many requests');
     await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
-      querierIPaddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-      queryString: req.body.query.slice(0, 5000),
-      rejectedBy: 'rate_limiter',
-      rejectedOn: Date.now()
+      querier_IP_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      query_string: req.body.query.slice(0, 5000),
+      rejected_by: 'rate_limiter',
+      rejected_on: Date.now()
     })]);
     const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
     console.log('cachedQueries: ', cachedQueries)

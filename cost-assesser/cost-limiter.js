@@ -19,6 +19,8 @@ const { rateConfig } = require('../config.js');
 // connect();
 const {redis, batchQueries} = require('../utils/runRedis.js');
 
+const reqInfo = {};
+
 
 // Main function to be added to middleware chain.
 async function costLimiter(req, res, next) {
@@ -26,11 +28,14 @@ async function costLimiter(req, res, next) {
   console.log('body: ', req.body);
   // const { query } = req.body
 
+  reqInfo.queryString = (req.body.query || undefined);
+  reqInfo.querierIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress
   
   // if the query has content, parse the request into an object and assess it with helper function
   if (req.body?.query) {
     const parsedQuery = parse(req.body.query);
-    console.log('parsed query: ', parsedQuery)  
+    console.log('parsed query: ', parsedQuery)
+    
     
     const passRes = res; // save res object in a constant so it can be passed into helper function
     const assessment = assessCost(parsedQuery, passRes);
@@ -50,10 +55,10 @@ async function costLimiter(req, res, next) {
       return next();
     } else {
       await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
-        querierIPaddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-        queryString: req.body.query.slice(0, 5000),
-        rejectedBy: 'cost_limiter',
-        rejectedOn: Date.now()
+        querier_IP_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        query_string: req.body.query.slice(0, 5000),
+        rejected_by: 'cost_limiter',
+        rejected_on: Date.now()
       })]);
       const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
       console.log('cachedQueries: ', cachedQueries)
@@ -138,4 +143,4 @@ function assessCost(obj, res) {
   return true;
 }
 
-module.exports = costLimiter;
+module.exports = {costLimiter, reqInfo};
