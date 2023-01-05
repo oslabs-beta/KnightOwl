@@ -33,15 +33,19 @@ function getQueriesAndMutations(definitions) {
 
 async function determineDepth(node, depthSoFar, maxDepth, context, operationName) {
   if (depthSoFar > maxDepth) {
-    await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
-      querierIPaddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-      queryString: req.body.query.slice(0, 5000),
-      rejectedBy: 'depth_limiter',
-      rejectedOn: Date.now()
-    })]);
-    const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
-    console.log('cachedQueries: ', cachedQueries)
-    batchQueries();
+
+    // TODO: need to figure out how to access request body here to grab IP address and query string, since not
+    // using middleware pattern don't have access to req body
+
+    // await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
+    //   querierIPaddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+    //   queryString: req.body.query.slice(0, 5000),
+    //   rejectedBy: 'depth_limiter',
+    //   rejectedOn: Date.now()
+    // })]);
+    // const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
+    // console.log('cachedQueries: ', cachedQueries)
+    // batchQueries();
     return context.reportError(
       new GraphQLError(`'${operationName}' exceeds maximum operation depth of ${maxDepth}`, [ node ])
     );
