@@ -30,9 +30,9 @@ function manageBatch() {
             saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
           }`,
           variables: {
-            // cachedQueries: queryData,
+            cachedQueries: queryData,
             // cachedQueries: ['hi mom', 'ugh', 'why is this so hard :('],
-            cachedQueries: ['hi mom'],
+            // cachedQueries: ['hi mom'],
             KOUser: process.env.KO_USER,
             KOPass: process.env.KO_PASS
           }
