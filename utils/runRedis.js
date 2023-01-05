@@ -27,23 +27,23 @@ function manageBatch() {
                 saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
               }`,
             variables: {
-              cachedQueries: cachedQueries,
+              // cachedQueries: cachedQueries,
+              cachedQueries: 'hi mom',
               KOUser: process.env.KO_USER,
               KOPass: process.env.KO_PASS
             }
           },
           {
-            'content-type': 'application/json'
+            'content-type' : 'application/json'
           }
         )
-        .then(data => data.json())
         .then(response => {
           console.log('KnightOwl: Queries stored: ', response);
           redis.del('queries');
           timeRunning = false;
         })
         .catch(err => {
-          console.log('KnightOwl: Error storing queries: ', err)
+          console.log('KnightOwl: Error storing queries', err)
           timeRunning = false;
         });
       }, 5000)
