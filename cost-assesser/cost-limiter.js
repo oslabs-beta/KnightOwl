@@ -3,8 +3,25 @@ const { costs, forbiddenOperations } = require('../config.js');
 const { parse } = require('graphql');
 // import util from 'util';
 
+const Express = require('express');
+// const Redis = require('redis');
+const { rateConfig } = require('../config.js');
+// const pkg = require('bluebird');
+
+// const { promisifyAll } = pkg;
+
+// const redis = new Redis.createClient();
+// promisifyAll(redis);
+
+// async function connect() {
+//   await redis.connect();
+// }
+// connect();
+const {redis, batchQueries} = require('../utils/runRedis.js');
+
+
 // Main function to be added to middleware chain.
-function costLimiter(req, res, next) {
+async function costLimiter(req, res, next) {
   // grab the query string off the request body
   console.log('body: ', req.body);
   // const { query } = req.body
@@ -25,9 +42,26 @@ function costLimiter(req, res, next) {
       })
     };
 
-    return (res.locals.cost < costs.max) ? next() : res.status(429).json({
-      message: 'Query exceeds maximum complexity cost.'
-    })
+    // return (res.locals.cost < costs.max) ? next() : res.status(429).json({
+    //   message: 'Query exceeds maximum complexity cost.'
+    // })
+
+    if (res.locals.cost < costs.max) {
+      return next();
+    } else {
+      await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
+        querierIPaddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        queryString: req.body.query.slice(0, 5000),
+        rejectedBy: 'cost_limiter',
+        rejectedOn: Date.now()
+      })]);
+      const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
+      console.log('cachedQueries: ', cachedQueries)
+      batchQueries();
+      return res.status(429).json({
+        message: 'Query exceeds maximum complexity cost.'
+      })
+    }
 
   }
   

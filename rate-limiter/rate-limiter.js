@@ -4,20 +4,21 @@
 // const { rateConfig } = require('../config');
 
 const Express = require('express');
-const Redis = require('redis');
+// const Redis = require('redis');
 const { rateConfig } = require('../config.js');
-const pkg = require('bluebird');
-const { promisifyAll } = pkg;
+// const pkg = require('bluebird');
+// const { promisifyAll } = pkg;
 
-const redis = new Redis.createClient();
-promisifyAll(redis);
+// const redis = new Redis.createClient();
+const {redis, batchQueries} = require('../utils/runRedis.js')
+// promisifyAll(redis);
 
-// connect to redis
+// // connect to redis
 
-async function connect() {
-  await redis.connect();
-}
-connect();
+// async function connect() {
+//   await redis.connect();
+// }
+// connect();
 
 /*
 * Rate Limiter
@@ -69,6 +70,15 @@ async function rateLimiter(req, res, next) {
 
   if (requestCount > rateConfig.requestLimit) {
     console.log('too many requests');
+    await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
+      querierIPaddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      queryString: req.body.query.slice(0, 5000),
+      rejectedBy: 'rate_limiter',
+      rejectedOn: Date.now()
+    })]);
+    const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
+    console.log('cachedQueries: ', cachedQueries)
+    batchQueries();
     return res.status(429).json({
       message: 'Too Many Requests',
       // status: 429,

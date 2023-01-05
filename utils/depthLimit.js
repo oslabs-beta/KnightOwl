@@ -1,4 +1,5 @@
 const { GraphQLError } = require('graphql');
+const {redis, batchQueries} = require('../utils/runRedis.js');
 
 const depthLimit = (maxDepth) => validationContext => {
     try {
@@ -30,8 +31,17 @@ function getQueriesAndMutations(definitions) {
   }, {});
 };
 
-function determineDepth(node, depthSoFar, maxDepth, context, operationName) {
+async function determineDepth(node, depthSoFar, maxDepth, context, operationName) {
   if (depthSoFar > maxDepth) {
+    await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
+      querierIPaddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      queryString: req.body.query.slice(0, 5000),
+      rejectedBy: 'depth_limiter',
+      rejectedOn: Date.now()
+    })]);
+    const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
+    console.log('cachedQueries: ', cachedQueries)
+    batchQueries();
     return context.reportError(
       new GraphQLError(`'${operationName}' exceeds maximum operation depth of ${maxDepth}`, [ node ])
     );
