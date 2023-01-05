@@ -25,16 +25,16 @@ const reqInfo = {};
 // Main function to be added to middleware chain.
 async function costLimiter(req, res, next) {
   // grab the query string off the request body
-  console.log('body: ', req.body);
+  // console.log('body: ', req.body);
   // const { query } = req.body
 
-  reqInfo.queryString = (req.body.query || undefined);
+  reqInfo.queryString = (req.body?.query) ? req.body.query.slice(0, 5000) : undefined;
   reqInfo.querierIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress
   
   // if the query has content, parse the request into an object and assess it with helper function
   if (req.body?.query) {
     const parsedQuery = parse(req.body.query);
-    console.log('parsed query: ', parsedQuery)
+    // console.log('parsed query: ', parsedQuery)
     
     
     const passRes = res; // save res object in a constant so it can be passed into helper function
@@ -60,8 +60,6 @@ async function costLimiter(req, res, next) {
         rejected_by: 'cost_limiter',
         rejected_on: Date.now()
       })]);
-      const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
-      console.log('cachedQueries: ', cachedQueries)
       batchQueries();
       return res.status(429).json({
         message: 'Query exceeds maximum complexity cost.'

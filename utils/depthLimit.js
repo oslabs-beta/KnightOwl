@@ -39,12 +39,10 @@ async function determineDepth(node, depthSoFar, maxDepth, context, operationName
 
     await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
       querier_IP_address: reqInfo.querierIP,
-      query_string: reqInfo.queryString.slice(0, 5000),
+      query_string: reqInfo.queryString,
       rejected_by: 'depth_limiter',
       rejected_on: Date.now()
     })]);
-    const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
-    console.log('cachedQueries: ', cachedQueries)
     batchQueries();
     return context.reportError(
       new GraphQLError(`'${operationName}' exceeds maximum operation depth of ${maxDepth}`, [ node ])

@@ -1,5 +1,6 @@
 require('dotenv').config();
 const Redis = require('redis');
+const axios = require('axios')
 const pkg = require('bluebird');
 
 const { promisifyAll } = pkg;
@@ -20,17 +21,21 @@ function manageBatch() {
       timeRunning = true;
       setTimeout(async () => {
         const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
-        fetch('localhost:8080/graphQL', {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json'
+        axios.post('http://localhost:8080/graphql', 
+          {
+            query: `mutation SaveQueryBatch($cachedQueries: String, $KOUser: String, $KOPass: String) {
+                saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
+              }`,
+            variables: {
+              cachedQueries: cachedQueries,
+              KOUser: process.env.KO_USER,
+              KOPass: process.env.KO_PASS
+            }
           },
-          body: JSON.stringify({
-            cachedQueries: cachedQueries,
-            KOUser: process.env.KO_USER,
-            KOPass: process.env.KO_PASS
-          })
-        })
+          {
+            'content-type': 'application/json'
+          }
+        )
         .then(data => data.json())
         .then(response => {
           console.log('KnightOwl: Queries stored: ', response);

@@ -76,8 +76,6 @@ async function rateLimiter(req, res, next) {
       rejected_by: 'rate_limiter',
       rejected_on: Date.now()
     })]);
-    const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
-    console.log('cachedQueries: ', cachedQueries)
     batchQueries();
     return res.status(429).json({
       message: 'Too Many Requests',
