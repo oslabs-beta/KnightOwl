@@ -2,6 +2,7 @@
 const { costs, forbiddenOperations } = require('../config.js');
 const { parse } = require('graphql');
 // import util from 'util';
+const axios = require('axios')
 
 const Express = require('express');
 // const Redis = require('redis');
@@ -42,6 +43,21 @@ async function costLimiter(req, res, next) {
     
     // Refuse query if assessCost finds an introspection query and config is set to forbid
     if (!assessment) {
+      await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
+        querier_IP_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        query_string: req.body.query.slice(0, 5000),
+        rejected_by: 'cost_limiter',
+        rejected_on: Date.now()
+      })]);
+      batchQueries();
+      // axios.post('http://localhost:8080/graphql', {
+      //   query: `mutation SaveQuery($user_id: ID, $querier_ip_address: String, $query_string: String, $rejected_by: String, $rejected_on: String) {
+      //     queryID
+      //   }`
+      // })
+      // .then(response => console.log('success: ', response))
+      // .catch(err => console.log('error: ', err));
+
       return res.status(429).json({
         message: 'Forbidden query.'
       })

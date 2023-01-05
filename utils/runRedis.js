@@ -1,6 +1,6 @@
 require('dotenv').config();
 const Redis = require('redis');
-const axios = require('axios')
+const axios = require('axios').default
 const pkg = require('bluebird');
 
 const { promisifyAll } = pkg;
@@ -21,24 +21,48 @@ function manageBatch() {
       timeRunning = true;
       setTimeout(async () => {
         const cachedQueries = await redis.sendCommand(['LRANGE', 'queries', '0', '-1']);
-        axios.post('http://localhost:8080/graphql', 
-          {
-            query: `mutation SaveQueryBatch($cachedQueries: String, $KOUser: String, $KOPass: String) {
-                saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
-              }`,
-            variables: {
-              // cachedQueries: cachedQueries,
-              cachedQueries: 'hi mom',
-              KOUser: process.env.KO_USER,
-              KOPass: process.env.KO_PASS
-            }
-          },
-          {
-            'content-type' : 'application/json'
+        const queryData = [];
+        for (const q of cachedQueries) {
+          queryData.push(JSON.parse(q));
+        }
+        const data = {
+          query: `mutation SaveQueryBatch($cachedQueries: String, $KOUser: String, $KOPass: String) {
+            saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
+          }`,
+          variables: {
+            // cachedQueries: queryData,
+            // cachedQueries: ['hi mom', 'ugh', 'why is this so hard :('],
+            cachedQueries: ['hi mom'],
+            KOUser: process.env.KO_USER,
+            KOPass: process.env.KO_PASS
           }
+        }
+        axios.post('http://localhost:8080/middleware', 
+          {query: `mutation SaveQueryBatch($cachedQueries: String, $KOUser: String, $KOPass: String) {
+              saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass) {
+                KOUser
+              }
+            }`,
+          variables: {
+            cachedQueries: queryData,
+            // cachedQueries: ['hi mom', 'ugh', 'why is this so hard :('],
+            // cachedQueries: 'hi mom',
+            KOUser: process.env.KO_USER,
+            KOPass: process.env.KO_PASS
+          }},
+          // {
+          //   // headers: {
+          //     'content-type' : 'application/json'
+          //   // }
+          // }
         )
+        // axios({
+        //   method: 'post',
+        //   url: 'http://localhost:8080/graphql',
+        //   data,
+        // })
         .then(response => {
-          console.log('KnightOwl: Queries stored: ', response);
+          console.log('KnightOwl: Queries stored: ', response.status);
           redis.del('queries');
           timeRunning = false;
         })
@@ -46,7 +70,7 @@ function manageBatch() {
           console.log('KnightOwl: Error storing queries', err)
           timeRunning = false;
         });
-      }, 5000)
+      }, 2000)
     }
   }
 }

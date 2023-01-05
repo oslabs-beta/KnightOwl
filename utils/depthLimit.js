@@ -34,9 +34,6 @@ function getQueriesAndMutations(definitions) {
 
 async function determineDepth(node, depthSoFar, maxDepth, context, operationName) {
   if (depthSoFar > maxDepth) {
-    // TODO: need to figure out how to access request body here to grab IP address and query string, since not
-    // using middleware pattern don't have access to req body
-
     await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
       querier_IP_address: reqInfo.querierIP,
       query_string: reqInfo.queryString,
