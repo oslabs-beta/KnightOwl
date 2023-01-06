@@ -72,7 +72,7 @@ async function rateLimiter(req, res, next) {
     console.log('too many requests');
     await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
       querier_IP_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-      query_string: req.body.query.slice(0, 5000),
+      query_string: (req.body.query) ? req.body.query.slice(0, 5000) : 'Introspection Query',
       rejected_by: 'rate_limiter',
       rejected_on: '2023-1-5 09:35:00 +0000'
     })]);

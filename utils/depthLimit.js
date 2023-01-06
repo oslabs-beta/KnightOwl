@@ -36,7 +36,7 @@ async function determineDepth(node, depthSoFar, maxDepth, context, operationName
   if (depthSoFar > maxDepth) {
     await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
       querier_IP_address: reqInfo.querierIP,
-      query_string: reqInfo.queryString,
+      query_string: reqInfo.queryString || 'Introspection Query',
       rejected_by: 'depth_limiter',
       rejected_on: '2023-1-5 09:35:00 +0000',
     })]);

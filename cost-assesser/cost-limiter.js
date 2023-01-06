@@ -45,7 +45,7 @@ async function costLimiter(req, res, next) {
     if (!assessment) {
       await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
         querier_IP_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-        query_string: req.body.query.slice(0, 5000),
+        query_string: 'Introspection Query',
         rejected_by: 'cost_limiter',
         rejected_on: '2023-1-5 09:35:00 +0000'
       })]);
