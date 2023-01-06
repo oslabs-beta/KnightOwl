@@ -47,7 +47,7 @@ async function costLimiter(req, res, next) {
         querier_IP_address: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
         query_string: req.body.query.slice(0, 5000),
         rejected_by: 'cost_limiter',
-        rejected_on: Date.now()
+        rejected_on: '2023-1-5 09:35:00 +0000'
       })]);
       batchQueries();
       // axios.post('http://localhost:8080/graphql', {

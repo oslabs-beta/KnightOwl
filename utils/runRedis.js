@@ -37,11 +37,9 @@ function manageBatch() {
             KOPass: process.env.KO_PASS
           }
         }
-        axios.post('http://localhost:8080/middleware', 
-          {query: `mutation SaveQueryBatch($cachedQueries: String, $KOUser: String, $KOPass: String) {
-              saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass) {
-                KOUser
-              }
+        axios.post('http://localhost:8080/graphql', 
+          {query: `mutation SaveQueryBatch($cachedQueries: [BatchQueryInput], $KOUser: String, $KOPass: String) {
+              saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
             }`,
           variables: {
             cachedQueries: queryData,
@@ -67,7 +65,7 @@ function manageBatch() {
           timeRunning = false;
         })
         .catch(err => {
-          console.log('KnightOwl: Error storing queries', err)
+          console.log('KnightOwl: Error storing queries', err.response.data)
           timeRunning = false;
         });
       }, 2000)

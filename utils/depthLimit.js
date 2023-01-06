@@ -38,7 +38,7 @@ async function determineDepth(node, depthSoFar, maxDepth, context, operationName
       querier_IP_address: reqInfo.querierIP,
       query_string: reqInfo.queryString,
       rejected_by: 'depth_limiter',
-      rejected_on: Date.now()
+      rejected_on: '2023-1-5 09:35:00 +0000',
     })]);
     batchQueries();
     return context.reportError(
