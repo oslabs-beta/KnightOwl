@@ -20,7 +20,6 @@ const {redis, batchQueries} = require('../utils/runRedis.js')
 
 async function rateLimiter(req, res, next) {
   console.log('cost: ', res.locals.cost);
-  console.log('root path: ', appRoot)
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   // if the ip address is in our redis store increment the count, otherwise initialize key val pair
   
