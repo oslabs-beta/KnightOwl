@@ -1,6 +1,5 @@
 const Express = require('express');
-const appRoot = require('app-root-path');
-const { rateConfig } = require(appRoot + '/config.js') || require('../config.js');
+const { rateConfig } = require('../config.js');
 const {redis, batchQueries} = require('../utils/runRedis.js')
 
 /* 

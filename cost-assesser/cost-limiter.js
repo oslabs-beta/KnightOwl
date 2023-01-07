@@ -1,10 +1,9 @@
-const appRoot = require('app-root-path');
-const { costs, forbiddenOperations } = require(appRoot + '/config.js')|| require('../config.js');
+const { costs, forbiddenOperations } = require('../config.js')
 const { parse } = require('graphql');
 const axios = require('axios')
 
 const Express = require('express');
-const { rateConfig } = require(appRoot + '/config.js') || require('../config.js');
+const { rateConfig } = require('../config.js');
 const {redis, batchQueries} = require('../utils/runRedis.js');
 
 const reqInfo = {};
