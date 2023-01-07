@@ -31,8 +31,6 @@ function manageBatch() {
           }`,
           variables: {
             cachedQueries: queryData,
-            // cachedQueries: ['hi mom', 'ugh', 'why is this so hard :('],
-            // cachedQueries: ['hi mom'],
             KOUser: process.env.KO_USER,
             KOPass: process.env.KO_PASS
           }
@@ -43,22 +41,10 @@ function manageBatch() {
             }`,
           variables: {
             cachedQueries: queryData,
-            // cachedQueries: ['hi mom', 'ugh', 'why is this so hard :('],
-            // cachedQueries: 'hi mom',
             KOUser: process.env.KO_USER,
             KOPass: process.env.KO_PASS
           }},
-          // {
-          //   // headers: {
-          //     'content-type' : 'application/json'
-          //   // }
-          // }
         )
-        // axios({
-        //   method: 'post',
-        //   url: 'http://localhost:8080/graphql',
-        //   data,
-        // })
         .then(response => {
           console.log('KnightOwl: Queries stored: ', response.status);
           redis.del('queries');
@@ -68,7 +54,7 @@ function manageBatch() {
           console.log('KnightOwl: Error storing queries', err.response.data)
           timeRunning = false;
         });
-      }, 2000)
+      }, 60000)
     }
   }
 }
