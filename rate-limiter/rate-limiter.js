@@ -34,15 +34,12 @@ async function rateLimiter(req, res, next) {
   // increment query by 1 if query bypassed cost limiter as an introspection query, else increment by cost
   // assigned in cost-limiter
   const incrementAmount = res.locals.cost || 1;
-  console.log('increment amount: ', incrementAmount)
 
   const requestCount = await redis.sendCommand(['INCRBY', `${ip}`, `${incrementAmount}`]);
-  console.log('request count: ', requestCount);
   const ttl = await redis.ttl(ip);
-  console.log(`ip: ${ip}; requestCount: ${requestCount}; TTL: ${ttl}`);
 
   if (requestCount > rateConfig.requestLimit) {
-    console.log('too many requests');
+    console.log('KnightOwl: Query exceeds rate limit.');
     let timestamp = new Date();
     timestamp = timestamp.toISOString();
     await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
