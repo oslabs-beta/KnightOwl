@@ -31,34 +31,27 @@ function manageBatch() {
           }`,
           variables: {
             cachedQueries: queryData,
-            // cachedQueries: ['hi mom', 'ugh', 'why is this so hard :('],
-            // cachedQueries: ['hi mom'],
             KOUser: process.env.KO_USER,
             KOPass: process.env.KO_PASS
           }
         }
-        axios.post('http://localhost:8080/graphql', 
-          {query: `mutation SaveQueryBatch($cachedQueries: [BatchQueryInput], $KOUser: String, $KOPass: String) {
-              saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
-            }`,
-          variables: {
-            cachedQueries: queryData,
-            // cachedQueries: ['hi mom', 'ugh', 'why is this so hard :('],
-            // cachedQueries: 'hi mom',
-            KOUser: process.env.KO_USER,
-            KOPass: process.env.KO_PASS
-          }},
-          // {
-          //   // headers: {
-          //     'content-type' : 'application/json'
-          //   // }
-          // }
+        axios.post('https://knight-owl-display-ixu7tjed5q-pd.a.run.app//graphql', 
+          // {query: `mutation SaveQueryBatch($cachedQueries: [BatchQueryInput], $KOUser: String, $KOPass: String) {
+          //     saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
+          //   }`,
+          // variables: {
+          //   cachedQueries: queryData,
+          //   KOUser: process.env.KO_USER,
+          //   KOPass: process.env.KO_PASS
+          // }},
+          {
+            query: `mutation {
+              saveQuery(user_id: 1, querier_ip_address: "0:0:0:1", query_string: "testing URL post", rejected_by: "cost_limiter", rejected_on: "2023-01-07T20:57:19.970Z") {
+                query_id
+              }
+            }`
+          }
         )
-        // axios({
-        //   method: 'post',
-        //   url: 'http://localhost:8080/graphql',
-        //   data,
-        // })
         .then(response => {
           console.log('KnightOwl: Queries stored: ', response.status);
           redis.del('queries');
@@ -68,7 +61,7 @@ function manageBatch() {
           console.log('KnightOwl: Error storing queries', err.response.data)
           timeRunning = false;
         });
-      }, 2000)
+      }, 1000)
     }
   }
 }

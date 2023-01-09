@@ -1,11 +1,11 @@
 
 const config = {
   rateConfig: {
-    requestLimit: 100,
+    requestLimit: 1000,
     timeLimit: 60,
   },
   costs: {
-    max: Infinity,
+    max: 50000,
     operationCosts: {
       query: 1 ,
       mutation: 10,
@@ -16,7 +16,7 @@ const config = {
     }
   },
   forbiddenOperations: {
-    introspectionQueries: true,
+    introspectionQueries: false,
   }
 }
 

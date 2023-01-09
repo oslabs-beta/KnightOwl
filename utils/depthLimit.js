@@ -34,11 +34,13 @@ function getQueriesAndMutations(definitions) {
 
 async function determineDepth(node, depthSoFar, maxDepth, context, operationName) {
   if (depthSoFar > maxDepth) {
+    let timestamp = new Date();
+    timestamp = timestamp.toISOString();
     await redis.sendCommand(['RPUSH', 'queries', JSON.stringify({
       querier_IP_address: reqInfo.querierIP,
       query_string: reqInfo.queryString || 'Introspection Query',
       rejected_by: 'depth_limiter',
-      rejected_on: '2023-1-5 09:35:00 +0000',
+      rejected_on: timestamp,
     })]);
     batchQueries();
     return context.reportError(

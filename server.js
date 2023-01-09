@@ -111,7 +111,7 @@ app.use(express.json())
 app.use('/graphql', costLimiter, rateLimiter, graphqlHTTP({
   schema,
   graphiql: true,
-  validationRules: [ depthLimit(20) ],
+  validationRules: [ depthLimit(200) ],
 }));
 
 app.listen(3000, () => console.log('Express GraphQL Server Now Running On localhost:3000/graphql'));
