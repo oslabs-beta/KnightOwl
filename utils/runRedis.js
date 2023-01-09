@@ -54,7 +54,7 @@ function manageBatch() {
           console.log('KnightOwl: Error storing queries', err.response.data)
           timeRunning = false;
         });
-      }, 1000)
+      }, 30000)
     }
   }
 }
