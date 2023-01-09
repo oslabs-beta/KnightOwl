@@ -35,7 +35,7 @@ function manageBatch() {
             KOPass: process.env.KO_PASS
           }
         }
-        axios.post('https://knight-owl-display-ixu7tjed5q-pd.a.run.app//graphql', 
+        axios.post('https://knightowl.app/graphql', 
           {query: `mutation SaveQueryBatch($cachedQueries: [BatchQueryInput], $KOUser: String, $KOPass: String) {
               saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
             }`,
