@@ -35,22 +35,15 @@ function manageBatch() {
             KOPass: process.env.KO_PASS
           }
         }
-        axios.post('https://knight-owl-display-ixu7tjed5q-pd.a.run.app//graphql', 
-          // {query: `mutation SaveQueryBatch($cachedQueries: [BatchQueryInput], $KOUser: String, $KOPass: String) {
-          //     saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
-          //   }`,
-          // variables: {
-          //   cachedQueries: queryData,
-          //   KOUser: process.env.KO_USER,
-          //   KOPass: process.env.KO_PASS
-          // }},
-          {
-            query: `mutation {
-              saveQuery(user_id: 1, querier_ip_address: "0:0:0:1", query_string: "testing URL post", rejected_by: "cost_limiter", rejected_on: "2023-01-07T20:57:19.970Z") {
-                query_id
-              }
-            }`
-          }
+        axios.post('https://knightowl.app/graphql', 
+          {query: `mutation SaveQueryBatch($cachedQueries: [BatchQueryInput], $KOUser: String, $KOPass: String) {
+              saveQueryBatch(cachedQueries: $cachedQueries, KOUser: $KOUser, KOPass: $KOPass)
+            }`,
+          variables: {
+            cachedQueries: queryData,
+            KOUser: process.env.KO_USER,
+            KOPass: process.env.KO_PASS
+          }},
         )
         .then(response => {
           console.log('KnightOwl: Queries stored: ', response.status);
@@ -61,7 +54,7 @@ function manageBatch() {
           console.log('KnightOwl: Error storing queries', err.response.data)
           timeRunning = false;
         });
-      }, 1000)
+      }, 30000)
     }
   }
 }
