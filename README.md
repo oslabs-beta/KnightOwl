@@ -18,6 +18,10 @@ In order to use this product, you'll need to have a redis server running.
 
 If you haven't already, run the command install redis on your machine (See [https://redis.io](https://redis.io)) <br />
 
+The Knight Owl rate limiter uses redis to track queries by IP address. <br /> 
+In addtion redis will cache query history as requests are made. Our middleware will periodically clear that cache and store metrics based on query history in our own database. <br />
+These metrics are visualized when you sign in at [knightowl.app](https://knightowl.app/) <br />
+
 Once you've installed redis, run the command `redis-server` in your terminal to spin up an instance of a redis server that you will need in order to use this library.
 
 ```
@@ -41,7 +45,6 @@ Once you've installed redis, run the command `redis-server` in your terminal to 
 ```
 
 You should see a message similar to above once your redis server is successfully running. You should expect the port to default to `6379`.
-
 
 </hr>
 
@@ -110,9 +113,22 @@ KO_PASS='[thePasswordYouSignedUpWith]'
 ```
 
 ## Utilizing Knight Owl in Your Application
+<hr>
+In your server file (Or wherever you are defining your `'/graphql'` endpoint and invoking the `graphqlHTTP()` function): <br />
 
+- Require in the `knightowl` module with `const { knightOwl } = require('knightowl')`
+- Add the `knightowl.costLimiter `and `knightowl.rateLimiter` functions to your middleware chain ***before*** an invocation of `graphqlHTTP()`
+- Invoke of `graphqlHTTP()`. Make sure the object passed in as an argument contains the property `validationRules: [knightOwl.depthLimit(<Num>)]` with your desired depth limit in place of `<Num>`.
+<br /> <br />
 
+It should look as follows:
+```
+app.use('/graphql', knightOwl.costLimiter, knightOwl.rateLimiter, graphqlHTTP({
+  schema,
+  validationRules: [knightOwl.depthLimit(20)]
+}));
 
+```
 <br />
 
 # The Knight Owl Team
