@@ -1,7 +1,7 @@
 # KnightOwl Middleware Library
 KnightOwl is a middleware library to protect your APIs built on `express-graphql` servers, combined with a web app monitor to give observability to its activity.
 <br /> <br />
-Sign in at [KnightOwl.app](https://knightowl.app/) to utilize our the web app monitor in conjunction with the library protecting your GraphQL endpoints. <br />
+Sign in at [knightowl.app](https://knightowl.app/) to utilize our web app monitor in conjunction with the library protecting your GraphQL endpoints. <br />
 (Please make a note of the email and password you use to signup!) <br /> <br />
 
 # Getting Started
@@ -21,6 +21,7 @@ If you haven't already, run the command install redis on your machine (See [http
 The Knight Owl rate limiter uses redis to track queries by IP address. <br /> 
 In addtion redis will cache query history as requests are made. Our middleware will periodically clear that cache and store metrics based on query history in our own database. <br />
 These metrics are visualized when you sign in at [knightowl.app](https://knightowl.app/) <br />
+
 
 Once you've installed redis, run the command `redis-server` in your terminal to spin up an instance of a redis server that you will need in order to use this library.
 
